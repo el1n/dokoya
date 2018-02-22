@@ -1,4 +1,4 @@
-// 2>NUL & cl /nologo /utf-8 /O2 /Fedoko%1.exe /TP %0 && cl /nologo /utf-8 /O2 /Fedoko%1.dll /TP /LD %0 & GOTO EOF
+// 2>NUL & cl /nologo /utf-8 /O2 /Fe%~n0.exe /TP %0 && cl /nologo /utf-8 /O2 /Fe%~n0.dll /TP /LD %0 & GOTO EOF
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -44,7 +44,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd,LPARAM lParam)
 	return(TRUE);
 }
 
-extern "C" __declspec(dllexport) BOOL __cdecl doko(char *r,int z)
+extern "C" __declspec(dllexport) BOOL __cdecl dokoya(char *r,int z)
 {
 	OSVERSIONINFO osv;
 	IUIAutomation *uia;
@@ -54,6 +54,7 @@ extern "C" __declspec(dllexport) BOOL __cdecl doko(char *r,int z)
 	double d;
 	std::vector<HWND> h;
 	char s[2][256];
+	char ws[512];
 	char *p;
 	VARIANT v;
 
@@ -76,15 +77,15 @@ extern "C" __declspec(dllexport) BOOL __cdecl doko(char *r,int z)
 		if(IsWindowVisible(h[i])){
 			GetClassName(h[i],s[0],256);
 			GetWindowText(h[i],s[1],256);
-			printf("[%3d] %s (%08x:%s)\n",i,s[1],h[i],s[0]);
+			//printf("[%3d] %s (%08x:%s)\n",i,s[1],h[i],s[0]);
 
 			for(int j = 0;j < sizeof(c) / sizeof(c[0]);++j){
 				if(strstr(s[0],c[j].ClassName) && strstr(s[1],c[j].WindowText)){
 					if(uia->ElementFromHandle(h[i],&e) == S_OK){
-						ZeroMemory(s,sizeof(s));
-						MultiByteToWideChar(CP_ACP,0,c[j].ControlName,strlen(c[j].ControlName),(LPWSTR)s,512);
+						ZeroMemory(ws,sizeof(ws));
+						MultiByteToWideChar(CP_UTF8,0,c[j].ControlName,strlen(c[j].ControlName),(LPWSTR)ws,512);
 						v.vt = VT_BSTR;
-						v.bstrVal = SysAllocString((OLECHAR*)s);
+						v.bstrVal = SysAllocString((OLECHAR*)ws);
 						uia->CreatePropertyCondition(UIA_NamePropertyId,v,&con);
 						SysFreeString(v.bstrVal);
 
@@ -131,7 +132,7 @@ extern "C" __declspec(dllexport) BOOL __cdecl doko(char *r,int z)
 
 int main(void)
 {
-	return(doko(NULL,0));
+	return(dokoya(NULL,0));
 }
 /*
 :EOF
